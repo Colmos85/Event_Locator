@@ -9,7 +9,6 @@ import java.util.Random;
 public class Test {
 	
 	static final int MAX_COORDS = 10;
-	static final int MIN_COORDS = -10;
 	
 	static Coordinate[][] gridWorld = new Coordinate[(MAX_COORDS*2)+1][(MAX_COORDS*2)+1];
 	
@@ -72,11 +71,11 @@ public class Test {
 		}
 		
 		System.out.print("Example: "); // + gridWorld[10][10].toString());
-		gridWorld[20][20].print();
+		gridWorld[10][20].print();
 		
 		// Add a couple of events hard coded first for testing
-		Event newEvent1 = new Event(gridWorld[20][20], "Event 001");
-		gridWorld[20][20].setEvent(newEvent1);
+		Event newEvent1 = new Event(gridWorld[10][20], "Event 001");
+		gridWorld[10][20].setEvent(newEvent1);
 		
 		Event newEvent2 = new Event(gridWorld[9][10], "Event 002");
 		gridWorld[9][10].setEvent(newEvent2);
@@ -98,75 +97,94 @@ public class Test {
 	 * The spiral algorithm will alternate to add/subtract on x/y axis for 
 	 * a count on the numMovements, which increments after by 1 after x and y axis has finished
 	 * 
-	 * @param x starting coord for x
-	 * @param y starting coord for y
+	 * @param x starting coord on the x-axis
+	 * @param y starting coord on the y-axis
 	 */
 	public static void searchAlgortihm(int x, int y)
 	{
-		checkLocation(x,y); // if user is at a location where theres an event
-		
 		int dx = x;
-		int dy = y+1;
+		int dy = y;
 		int numMovements = 1; // variable to indicate the amount of movements in an axis to go an one time.
 		boolean signPositive = false; // alternate sign false is minus, true is positive
 		
-		checkLocation(dx,dy);
+		//check starting pposition
+		checkLocation(dx,dy, x, y);
 		System.out.println("-------------------------");
 		
 		int mainCounter = 1;
 		boolean cont = true;  // what defines true???? when 5 locations are found || when grid has been seearched...
-		while(mainCounter  < MAX_COORDS+1) 
+		
+		// while - will search through all coordinates until it finds 5 events or reaches the edge of the grid size
+		while(mainCounter  < (MAX_COORDS*2)+1) 
 		{
 			
 			// This loop does two iterations, first moves x-axis
-			// second iteration moves y-axis
+			// second iteration moves y-axis.  The sign toggles
+			// after each loop to control direction
 			for(int i=1; i <=2; i++)
 			{
 				//controls how many movements in any one direction
 				for(int j=1; j<=numMovements; j++)
 				{
-					if(i==1 && !signPositive)
+					if(i==1 && !signPositive){ // left movement
 						dx-=1;
-					else if(i==2 && !signPositive)
+						if((dx*=-1) == MAX_COORDS+1)
+							dx = (dx *= -1)-1; //reverse sign
+					}else if(i==2 && !signPositive){ // down movement
 						dy-=1;
-					else if(i==1 && signPositive)
+						if((dy*=-1) == MAX_COORDS+1)
+							dy = (dy *= -1)-1; //reverse sign
+					}else if(i==1 && signPositive){ // right movement
 						dx+=1;
-					else if(i==2 && signPositive)
+						if(dx == MAX_COORDS+1)
+							dx = (dx *= -1)+1; //reverse sign
+					}else if(i==2 && signPositive){ // up movement
 						dy+=1;
+						if(dy == MAX_COORDS+1)
+							dy = (dy *= -1)+1; //reverse sign
+					}
 					
-					// if x and y axis are not outside of boundary, check location
-					if((dx<10 && dy<10 ) || (dx>-10 && dy>-10))
-						checkLocation(dx,dy);
-				}
-				
-				// increment counter if on first outer loop
-				if(i == 1)
-					numMovements++;
+					checkLocation(dx,dy, x, y);
+					
+				}	
 			} // End outer for loop
 			
+			// increment number of moves to go in a direction
+			numMovements++;
 			//reverse the sign
 			signPositive = !signPositive;
-			
+			// increment the counter for while loop
 			mainCounter ++;
+			
+			// to cover the final top left search with movements to take it outside the range
+			if(numMovements == (MAX_COORDS*2)+1){
+				for(int j=1; j<=numMovements-1; j++)
+				{
+					dx-=1;//left movements
+					if((dx*=-1) == MAX_COORDS+1)
+						dx = (dx *= -1)-1; //reverse sign
+					checkLocation(dx,dy, x, y);
+				}
+			}
+			
 		} // End of while
 	}
 
 	/**
-	 * Check location 2D array to see if it has an Event.
-	 * @param x
-	 * @param y
+	 * Check the 2D array location to see if it has an Event.
+	 * @param dx - x coordinate for location to search
+	 * @param dy - y coordinate for location to search
+	 * @param x - x coordinate of users location
+	 * @param y - y coordinate of users location
 	 */
-	public static void checkLocation(int x, int y)
+	public static void checkLocation(int dx, int dy, int x, int y)
 	{
-		//System.out.println("Location: "+x+","+y);
-		// will need to add 10 to the x and y coords to match the 2D array
 		
-		//gridWorld[x+MAX_COORDS][y+MAX_COORDS].print();
-		if(gridWorld[x+MAX_COORDS][y+MAX_COORDS].getEvent() != null){
-			System.out.println("Locaton Coordinates @:" + x+","+y);
-			System.out.println(gridWorld[x+MAX_COORDS][y+MAX_COORDS].getEvent().getName());
-		}/*else
-			System.out.println("No Event @:" + x+","+y);*/
+		if(gridWorld[dx+MAX_COORDS][dy+MAX_COORDS].getEvent() != null){
+			System.out.println("Locaton Coordinates @:" + dx+","+dy);
+			System.out.println(gridWorld[dx+MAX_COORDS][dy+MAX_COORDS].getEvent().getName());
+		}else
+			System.out.println("No Event @:" + dx+","+dy);
 		
 		//if the event is at the location - calculate the distance
 			//if the distance is closer than any in the list replace it
