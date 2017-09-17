@@ -40,9 +40,14 @@ public class Test {
 		int xCoord = Integer.parseInt(coords.substring(0, commaIndex));
 		int yCoord = Integer.parseInt(coords.substring(commaIndex+1));
 		
+		//perform a search in spiral pattern
 		searchAlgortihm(xCoord, yCoord);
 
-		
+		System.out.println("Closest Events to ("+xCoord+","+yCoord+")");
+		for(Event event:closestEvents)
+		{
+			System.out.println("\n" + event.toString() + " - $30.28, Distance " + calculateDistance(event.getLocation().getX(), event.getLocation().getY(), xCoord, yCoord));
+		}
 		
 		
 	} // End of main method
@@ -70,24 +75,30 @@ public class Test {
 			}
 		}
 		
-		System.out.print("Example: "); // + gridWorld[10][10].toString());
-		gridWorld[10][20].print();
-		
 		// Add a couple of events hard coded first for testing
-		Event newEvent1 = new Event(gridWorld[10][20], "Event 001");
-		gridWorld[10][20].setEvent(newEvent1);
+		Event newEvent1 = new Event(gridWorld[18][20], "Event 001"); //distance of 18 from 0,0
+		gridWorld[18][20].setEvent(newEvent1);
 		
-		Event newEvent2 = new Event(gridWorld[9][10], "Event 002");
+		Event newEvent2 = new Event(gridWorld[9][10], "Event 002"); //distance of 1 from 0,0
 		gridWorld[9][10].setEvent(newEvent2);
 		
-		Event newEvent3 = new Event(gridWorld[8][5], "Event 003");
+		Event newEvent3 = new Event(gridWorld[8][5], "Event 003"); //distance of 7 from 0,0
 		gridWorld[8][5].setEvent(newEvent3);
 		
-		Event newEvent4 = new Event(gridWorld[10][12], "Event 004");
-		gridWorld[10][12].setEvent(newEvent4);
+		Event newEvent4 = new Event(gridWorld[10][14], "Event 004"); //distance of 4 from 0,0
+		gridWorld[10][14].setEvent(newEvent4);
 		
-		Event newEvent5 = new Event(gridWorld[10][10], "Event 005");
-		gridWorld[10][10].setEvent(newEvent5);
+		Event newEvent5 = new Event(gridWorld[10][11], "Event 005"); //distance of 1 from 0,0
+		gridWorld[10][11].setEvent(newEvent5);
+		
+		Event newEvent6 = new Event(gridWorld[5][10], "Event 006"); //distance of 5 from 0,0
+		gridWorld[5][10].setEvent(newEvent6);
+		
+		Event newEvent7 = new Event(gridWorld[11][12], "Event 007"); //distance of 3 from 0,0
+		gridWorld[11][12].setEvent(newEvent7);
+		
+		Event newEvent8 = new Event(gridWorld[0][0], "Event 008"); //distance of 20 from 0,0
+		gridWorld[0][0].setEvent(newEvent8);
 	}
 	
 	/**
@@ -107,12 +118,13 @@ public class Test {
 		int numMovements = 1; // variable to indicate the amount of movements in an axis to go an one time.
 		boolean signPositive = false; // alternate sign false is minus, true is positive
 		
-		//check starting pposition
+		//check starting position
 		checkLocation(dx,dy, x, y);
-		System.out.println("-------------------------");
 		
 		int mainCounter = 1;
 		boolean cont = true;  // what defines true???? when 5 locations are found || when grid has been seearched...
+		int minCoords =  MAX_COORDS+1;
+		minCoords *= -1;
 		
 		// while - will search through all coordinates until it finds 5 events or reaches the edge of the grid size
 		while(mainCounter  < (MAX_COORDS*2)+1) 
@@ -128,19 +140,19 @@ public class Test {
 				{
 					if(i==1 && !signPositive){ // left movement
 						dx-=1;
-						if((dx*=-1) == MAX_COORDS+1)
+						if(dx == MAX_COORDS+1 || dx == minCoords)
 							dx = (dx *= -1)-1; //reverse sign
 					}else if(i==2 && !signPositive){ // down movement
 						dy-=1;
-						if((dy*=-1) == MAX_COORDS+1)
+						if(dy == MAX_COORDS+1 || dy == minCoords)
 							dy = (dy *= -1)-1; //reverse sign
 					}else if(i==1 && signPositive){ // right movement
 						dx+=1;
-						if(dx == MAX_COORDS+1)
+						if(dx == MAX_COORDS+1 || dx == minCoords)
 							dx = (dx *= -1)+1; //reverse sign
 					}else if(i==2 && signPositive){ // up movement
 						dy+=1;
-						if(dy == MAX_COORDS+1)
+						if(dy == MAX_COORDS+1 || dy == minCoords)
 							dy = (dy *= -1)+1; //reverse sign
 					}
 					
@@ -161,7 +173,7 @@ public class Test {
 				for(int j=1; j<=numMovements-1; j++)
 				{
 					dx-=1;//left movements
-					if((dx*=-1) == MAX_COORDS+1)
+					if(dx == MAX_COORDS+1 || dx == minCoords)
 						dx = (dx *= -1)-1; //reverse sign
 					checkLocation(dx,dy, x, y);
 				}
@@ -179,16 +191,25 @@ public class Test {
 	 */
 	public static void checkLocation(int dx, int dy, int x, int y)
 	{
-		
+		// if the coordinate has an Event
 		if(gridWorld[dx+MAX_COORDS][dy+MAX_COORDS].getEvent() != null){
-			System.out.println("Locaton Coordinates @:" + dx+","+dy);
-			System.out.println(gridWorld[dx+MAX_COORDS][dy+MAX_COORDS].getEvent().getName());
-		}else
-			System.out.println("No Event @:" + dx+","+dy);
+			// As the search is a spiral then only add events until there is 5
+			if(closestEvents.size() < 5)
+				closestEvents.add(gridWorld[dx+MAX_COORDS][dy+MAX_COORDS].getEvent());
+		}
 		
-		//if the event is at the location - calculate the distance
-			//if the distance is closer than any in the list replace it
-		
-		
+	}
+	
+	
+	/**
+	 * Calculate the distance between two points and always return positive integer
+	 * @param dx
+	 * @param dy
+	 * @param x
+	 * @param y
+	 * @return
+	 */
+	public static int calculateDistance(int dx, int dy, int x, int y){
+		return Math.abs(dx-x) + Math.abs(dy-y);
 	}
 }

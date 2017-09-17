@@ -39,5 +39,12 @@ public class Event {
 	}
 
 	
+	public String toString(){
+		return this.getName();
+	}
+	
+	public void print(){
+		System.out.println(this.toString());
+	}
 
 }
