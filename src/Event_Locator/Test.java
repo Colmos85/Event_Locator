@@ -13,6 +13,8 @@ public class Test {
 	
 	static Coordinate[][] gridWorld = new Coordinate[(MAX_COORDS*2)+1][(MAX_COORDS*2)+1];
 	
+	static ArrayList<Event> closestEvents = new ArrayList();
+	
 	static int eventIDCounter;
 	
 	public static void main(String []args){
@@ -48,6 +50,10 @@ public class Test {
 	
 	/**
 	 * Method to generate random events in and assign them to Locations
+	 * 
+	 * Note: As array cannot have negative value this method will create a mapping
+	 * of the grid world to the actual coordinates
+	 * i.e. gridWorld[0][0]  is at coordinates -10,-10
 	 */
 	public static void generateSeedData()
 	{
@@ -67,6 +73,22 @@ public class Test {
 		
 		System.out.print("Example: "); // + gridWorld[10][10].toString());
 		gridWorld[20][20].print();
+		
+		// Add a couple of events hard coded first for testing
+		Event newEvent1 = new Event(gridWorld[20][20], "Event 001");
+		gridWorld[20][20].setEvent(newEvent1);
+		
+		Event newEvent2 = new Event(gridWorld[9][10], "Event 002");
+		gridWorld[9][10].setEvent(newEvent2);
+		
+		Event newEvent3 = new Event(gridWorld[8][5], "Event 003");
+		gridWorld[8][5].setEvent(newEvent3);
+		
+		Event newEvent4 = new Event(gridWorld[10][12], "Event 004");
+		gridWorld[10][12].setEvent(newEvent4);
+		
+		Event newEvent5 = new Event(gridWorld[10][10], "Event 005");
+		gridWorld[10][10].setEvent(newEvent5);
 	}
 	
 	/**
@@ -81,6 +103,8 @@ public class Test {
 	 */
 	public static void searchAlgortihm(int x, int y)
 	{
+		checkLocation(x,y); // if user is at a location where theres an event
+		
 		int dx = x;
 		int dy = y+1;
 		int numMovements = 1; // variable to indicate the amount of movements in an axis to go an one time.
@@ -90,8 +114,8 @@ public class Test {
 		System.out.println("-------------------------");
 		
 		int mainCounter = 1;
-		boolean cont = true;  // what defines true???? when 5 locations are found...
-		while(mainCounter  < 22)//cont)
+		boolean cont = true;  // what defines true???? when 5 locations are found || when grid has been seearched...
+		while(mainCounter  < MAX_COORDS+1) 
 		{
 			
 			// This loop does two iterations, first moves x-axis
@@ -114,7 +138,7 @@ public class Test {
 					if((dx<10 && dy<10 ) || (dx>-10 && dy>-10))
 						checkLocation(dx,dy);
 				}
-				System.out.println("-------------------------");
+				
 				// increment counter if on first outer loop
 				if(i == 1)
 					numMovements++;
@@ -134,7 +158,19 @@ public class Test {
 	 */
 	public static void checkLocation(int x, int y)
 	{
-		System.out.println("Location: "+x+","+y);
+		//System.out.println("Location: "+x+","+y);
 		// will need to add 10 to the x and y coords to match the 2D array
+		
+		//gridWorld[x+MAX_COORDS][y+MAX_COORDS].print();
+		if(gridWorld[x+MAX_COORDS][y+MAX_COORDS].getEvent() != null){
+			System.out.println("Locaton Coordinates @:" + x+","+y);
+			System.out.println(gridWorld[x+MAX_COORDS][y+MAX_COORDS].getEvent().getName());
+		}/*else
+			System.out.println("No Event @:" + x+","+y);*/
+		
+		//if the event is at the location - calculate the distance
+			//if the distance is closer than any in the list replace it
+		
+		
 	}
 }
