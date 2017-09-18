@@ -127,7 +127,7 @@ public class Test {
 		minCoords *= -1;
 		
 		// while - will search through all coordinates until it finds 5 events or reaches the edge of the grid size
-		while(mainCounter  < (MAX_COORDS*2)+1) 
+		while((mainCounter  < (MAX_COORDS*2)+1) || (closestEvents.size() < 5)) 
 		{
 			
 			// This loop does two iterations, first moves x-axis
