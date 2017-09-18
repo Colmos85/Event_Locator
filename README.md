@@ -12,7 +12,7 @@ Global variable for java should be added.
  
  
  
-Spiral Search follows a pattern of: 
+Spiral Search follows a pattern of:  <br />
 ********************<br />
 Left  - 1 movement <br />
 Down  - 1 movement <br />
