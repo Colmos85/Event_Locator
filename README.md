@@ -12,31 +12,31 @@ Global variable for java should be added.
  
  
  
-Spiral Search follows a pattern of 
-********************
-Left  - 1 movement 
-Down  - 1 movement 
-------------------- change sign & increment numMovements 
-Right - 2 movements 
-Up    - 2 movements 
-******************** 
-Left  - 3 movements 
-Down  - 3 movements 
-------------------- change sign & increment numMovements 
-Right - 4 movements 
-Up    - 4 movements 
-******************** 
-. 
-. 
-. 
-******************** 
-Left  - 19 movements 
-Down  - 19 movements 
-------------------- 
-Right - 20 movements 
-Up    - 20 movements 
-******************** 
-Final top row has special case in the algorithm 
+Spiral Search follows a pattern of: 
+********************<br />
+Left  - 1 movement <br />
+Down  - 1 movement <br />
+------------------- change sign & increment numMovements <br /> 
+Right - 2 movements <br />
+Up    - 2 movements <br />
+******************** <br />
+Left  - 3 movements <br />
+Down  - 3 movements <br />
+------------------- change sign & increment numMovements <br /> 
+Right - 4 movements <br />
+Up    - 4 movements <br />
+******************** <br />
+. <br />
+. <br />
+. <br />
+******************** <br />
+Left  - 19 movements <br />
+Down  - 19 movements <br />
+------------------- <br />
+Right - 20 movements <br />
+Up    - 20 movements <br />
+******************** <br />
+Final top row has special case in the algorithm <br />
 
 
 
