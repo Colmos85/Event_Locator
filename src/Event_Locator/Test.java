@@ -1,8 +1,11 @@
 package Event_Locator;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.util.concurrent.TimeUnit;
 import java.util.Random;
 
 
@@ -12,9 +15,10 @@ public class Test {
 	
 	static Coordinate[][] gridWorld = new Coordinate[(MAX_COORDS*2)+1][(MAX_COORDS*2)+1];
 	
-	static ArrayList<Event> closestEvents = new ArrayList();
+	static ArrayList<Event> closestEvents = new ArrayList<Event>();
 	
 	static int eventIDCounter;
+	static Random rand = new Random(); // random object
 	
 	public static void main(String []args){
      
@@ -26,13 +30,13 @@ public class Test {
 		
 		Scanner scanner = new Scanner(System.in);
 		
-		System.out.println("\nPlease enter coordinates (x,y):");
+		System.out.print("\nPlease enter coordinates (x,y):");
 		String coords = scanner.nextLine();
 		
 		while(!coords.matches("([-+]?[0-9]|[-+]?10),([-+]?[0-9]|[-+]?10)"))
 		{
-			System.out.println("Input error - coordinates must be in the range of -10 to 10 and comma seperated! e.g. 5,5"); //{X}
-			System.out.println("Please re-enter coordinates:");
+			System.out.println("\nInput error - coordinates must be in the range of -10 to 10 and comma seperated! e.g. 5,5"); 
+			System.out.print("Please re-enter coordinates:");
 			coords = scanner.nextLine();
 		}
 		
@@ -43,10 +47,10 @@ public class Test {
 		//perform a search in spiral pattern
 		searchAlgortihm(xCoord, yCoord);
 
-		System.out.println("Closest Events to ("+xCoord+","+yCoord+")");
+		System.out.println("\nClosest Events to ("+xCoord+","+yCoord+")");
 		for(Event event:closestEvents)
 		{
-			System.out.println("\n" + event.toString() + " - $30.28, Distance " + calculateDistance(event.getLocation().getX(), event.getLocation().getY(), xCoord, yCoord));
+			System.out.println("\n" + event.toString() + " - $" + event.getCheapestTicket() + ", Distance " + calculateDistance(event.getLocation().getX(), event.getLocation().getY(), xCoord, yCoord));
 		}
 		
 		
@@ -62,9 +66,6 @@ public class Test {
 	public static void generateSeedData()
 	{
 		eventIDCounter = 1; //set counter for ID of events to 1
-		// randomly generate between 20 to 50 events and  
-		
-		Random rand = new Random(20);
 		
 		// generate the grid world
 		for(int i = 0; i <= (MAX_COORDS*2); i++)
@@ -75,8 +76,43 @@ public class Test {
 			}
 		}
 		
+		// Assumption that there will be 1 event to every 10 coordinates
+		// grid of 21*21=441, 441/10=44
+		int numOfEvents = ((MAX_COORDS*2)+1)*((MAX_COORDS*2)+1)/10;
+		Event newEvent;
+		int newXCoord;
+		int newYCoord;
+		Ticket ticket;
+		ArrayList<Ticket> tickets;
+		
+		for(int i = 1; i <= numOfEvents; i++)
+		{
+			// create random coordinates for new event
+			newXCoord = rand.nextInt(MAX_COORDS + 1 +MAX_COORDS) -MAX_COORDS;
+			newYCoord = rand.nextInt(MAX_COORDS + 1 +MAX_COORDS) -MAX_COORDS;
+			
+			newEvent = new Event(i, gridWorld[newXCoord+MAX_COORDS][newYCoord+MAX_COORDS], "Event "+String.format("%03d", i)); 
+			
+			//create a random number of tickets between 0 and 5
+			tickets = new ArrayList<Ticket>(); // clear all tickets in the arraylist
+			for(int j = 0; j < 4; j++)
+			{
+				int num = rand.nextInt(5000 - 1000) +1000; // create price in cents, from $10 to $50 
+				double price = num/100.0; // convert to double
+				ticket = new BasicTicket((new BigDecimal(price)).setScale(2, RoundingMode.CEILING));
+				tickets.add(ticket);
+			}
+			newEvent.setTickets(tickets);
+				
+			// set the grid coordinate to have this event
+			gridWorld[newXCoord+MAX_COORDS][newYCoord+MAX_COORDS].setEvent(newEvent);
+			
+		}
+		
+		
+		
 		// Add a couple of events hard coded first for testing
-		Event newEvent1 = new Event(gridWorld[18][20], "Event 001"); //distance of 18 from 0,0
+		/*Event newEvent1 = new Event(gridWorld[18][20], "Event 001"); //distance of 18 from 0,0
 		gridWorld[18][20].setEvent(newEvent1);
 		
 		Event newEvent2 = new Event(gridWorld[9][10], "Event 002"); //distance of 1 from 0,0
@@ -98,15 +134,17 @@ public class Test {
 		gridWorld[11][12].setEvent(newEvent7);
 		
 		Event newEvent8 = new Event(gridWorld[0][0], "Event 008"); //distance of 20 from 0,0
-		gridWorld[0][0].setEvent(newEvent8);
+		gridWorld[0][0].setEvent(newEvent8);*/
+		
+		
+		
 	}
 	
 	/**
-	 * This method will perform a spiral search,
-	 * starting with going up one, changing y coord + 1 as starting position
+	 * This method will perform a spiral diamond search and add the first 5 events found to the closestEvent array
 	 * 
-	 * The spiral algorithm will alternate to add/subtract on x/y axis for 
-	 * a count on the numMovements, which increments after by 1 after x and y axis has finished
+	 * This algorithm performs a search of all coordinates at a given number of movements from the user, starting with 1
+	 * and incrementing after each coordinate has been checked.
 	 * 
 	 * @param x starting coord on the x-axis
 	 * @param y starting coord on the y-axis
@@ -115,70 +153,67 @@ public class Test {
 	{
 		int dx = x;
 		int dy = y;
-		int numMovements = 1; // variable to indicate the amount of movements in an axis to go an one time.
-		boolean signPositive = false; // alternate sign false is minus, true is positive
+		int numMovements = 1; // variable to indicate the distance from the user
 		
 		//check starting position
 		checkLocation(dx,dy, x, y);
-		
-		int mainCounter = 1;
-		boolean cont = true;  // what defines true???? when 5 locations are found || when grid has been seearched...
-		int minCoords =  MAX_COORDS+1;
-		minCoords *= -1;
-		
-		// while - will search through all coordinates until it finds 5 events or reaches the edge of the grid size
-		while((mainCounter  < (MAX_COORDS*2)+1) || (closestEvents.size() < 5)) 
+
+		int minCoords =  MAX_COORDS;
+		minCoords *= -1; // max negative value of the grid
+
+		// while - will search through all coordinates until it finds 5 events 
+		while(numMovements < (MAX_COORDS*2)+2 && (closestEvents.size() < 5))
 		{
-			
-			// This loop does two iterations, first moves x-axis
-			// second iteration moves y-axis.  The sign toggles
-			// after each loop to control direction
-			for(int i=1; i <=2; i++)
+			//first loop - 
+			for(int i = 1; i <= 4; i++)
 			{
-				//controls how many movements in any one direction
-				for(int j=1; j<=numMovements; j++)
-				{
-					if(i==1 && !signPositive){ // left movement
-						dx-=1;
-						if(dx == MAX_COORDS+1 || dx == minCoords)
-							dx = (dx *= -1)-1; //reverse sign
-					}else if(i==2 && !signPositive){ // down movement
-						dy-=1;
-						if(dy == MAX_COORDS+1 || dy == minCoords)
-							dy = (dy *= -1)-1; //reverse sign
-					}else if(i==1 && signPositive){ // right movement
-						dx+=1;
-						if(dx == MAX_COORDS+1 || dx == minCoords)
-							dx = (dx *= -1)+1; //reverse sign
-					}else if(i==2 && signPositive){ // up movement
-						dy+=1;
-						if(dy == MAX_COORDS+1 || dy == minCoords)
-							dy = (dy *= -1)+1; //reverse sign
+				if(i == 1){ // // moving south-west
+					for(int j = 0; j < numMovements; j++){
+						dx = j-x;
+						dx *= -1; // reverse sign
+						dy = (numMovements-j)+y;
+						if((dx >= minCoords) && (dy <= MAX_COORDS)) // only check the coordinates if they are on the grid
+							checkLocation(dx, dy, x, y);
+						/*else
+							System.out.println("1 out of bounds - " + dx + "," + dy);*/
 					}
-					
-					checkLocation(dx,dy, x, y);
-					
-				}	
-			} // End outer for loop
-			
-			// increment number of moves to go in a direction
-			numMovements++;
-			//reverse the sign
-			signPositive = !signPositive;
-			// increment the counter for while loop
-			mainCounter ++;
-			
-			// to cover the final top left search with movements to take it outside the range
-			if(numMovements == (MAX_COORDS*2)+1){
-				for(int j=1; j<=numMovements-1; j++)
-				{
-					dx-=1;//left movements
-					if(dx == MAX_COORDS+1 || dx == minCoords)
-						dx = (dx *= -1)-1; //reverse sign
-					checkLocation(dx,dy, x, y);
+				}else if(i == 2){ // moving south-east
+					for(int j = 0; j < numMovements; j++){
+						dx = (numMovements-j)-x;
+						dx  *= -1; // change sign
+						dy = j-y; 
+						dy *= -1; // change sign
+						if((dx >= minCoords) && (dy >= minCoords))
+							checkLocation(dx, dy, x, y);
+						/*else
+							System.out.println("2 out of bounds - " + dx + "," + dy);*/
+					}
+				}else if(i == 3){ // moving north-east
+					for(int j = 0; j < numMovements; j++){
+						dx = j+x;
+						dy = (numMovements-j)-y;
+						dy *= -1;
+						if((dx <= MAX_COORDS) && (dy >= minCoords))
+							checkLocation(dx, dy, x, y);
+						/*else
+							System.out.println("3 out of bounds - " + dx + "," + dy);*/
+					}
+				}else if(i == 4){ // moving north-west
+					for(int j = 0; j < numMovements; j++){
+						dx = (numMovements-j)+x;
+						dy = j+y;
+						if((dx <= MAX_COORDS) && (dy <= MAX_COORDS))
+							checkLocation(dx, dy, x, y);
+						/*else
+							System.out.println("4 out of bounds - " + dx + "," + dy);*/
+					}
 				}
+				
 			}
-			
+
+			// increment the number of movements, from user coordinate
+			numMovements++;
+
 		} // End of while
 	}
 
@@ -203,10 +238,11 @@ public class Test {
 	
 	/**
 	 * Calculate the distance between two points and always return positive integer
-	 * @param dx
-	 * @param dy
-	 * @param x
-	 * @param y
+	 * This is the Manhatan Distance
+	 * @param dx - coordinate of event
+	 * @param dy - coordinate of event
+	 * @param x - user coordinates
+	 * @param y - user coordinates
 	 * @return
 	 */
 	public static int calculateDistance(int dx, int dy, int x, int y){

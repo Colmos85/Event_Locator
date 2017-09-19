@@ -19,20 +19,20 @@ Down  - 1 movement <br />
 ------------------- change sign & increment numMovements <br /> 
 Right - 2 movements <br />
 Up    - 2 movements <br />
-******************** <br />
+******************** increment numMovements<br />
 Left  - 3 movements <br />
 Down  - 3 movements <br />
 ------------------- change sign & increment numMovements <br /> 
 Right - 4 movements <br />
 Up    - 4 movements <br />
-******************** <br />
+******************** increment numMovements<br />
 . <br />
 . <br />
 . <br />
-******************** <br />
+******************** increment numMovements <br />
 Left  - 19 movements <br />
 Down  - 19 movements <br />
-------------------- <br />
+------------------- change sign & increment numMovements <br />
 Right - 20 movements <br />
 Up    - 20 movements <br />
 ******************** <br />
